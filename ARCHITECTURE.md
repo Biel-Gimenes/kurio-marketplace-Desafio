@@ -1,53 +1,54 @@
 # Como o projeto funciona
 
-Um resumo de como as partes conversam, para quem for mexer no código depois.
+Escrevi este arquivo para explicar, de forma simples, o caminho que os dados percorrem e onde fica cada parte do código.
 
-## O caminho dos dados
+## Do clique até a tela
 
-```text
-componente → hook → Axios → MSW → IndexedDB
-```
+Quando alguém usa o site, a informação passa por quatro lugares:
 
-O componente não guarda uma cópia dos dados. Ele chama um hook do React Query, que faz a requisição com Axios. O MSW intercepta essa requisição e responde como se fosse um servidor. O estado fica no IndexedDB.
+1. o componente da tela mostra o conteúdo e recebe os cliques;
+2. uma função busca os dados na API;
+3. o MSW responde como se fosse um servidor;
+4. a resposta é guardada no navegador e a tela é atualizada.
 
-Quando algo muda, o React Query invalida a consulta e busca os dados de novo. Foi a parte que mais me deu trabalho no começo.
+O componente nunca inventa os dados sozinho. Ele sempre pede para a API. Isso deixou o código mais fácil de testar, porque o painel de demonstração também passa pelo mesmo caminho.
 
-## Pastas principais
+## O que cada pasta faz
 
-- `src/contracts.ts`: os tipos que a API devolve e recebe.
-- `src/rules.ts`: cálculo dos totais, junção do carrinho, versões dos eventos e comparação do pedido.
-- `src/api.ts`: configuração do Axios, do React Query e os hooks de cada recurso.
-- `src/router.tsx`: rotas, parâmetros da URL e proteção das páginas que precisam de login.
+- `src/contracts.ts`: os tipos dos dados, como NFT, carrinho, cotação e pedido.
+- `src/rules.ts`: as contas de preço, a soma do carrinho e as regras do pedido.
+- `src/api.ts`: a configuração das requisições e os hooks que buscam cada informação.
+- `src/router.tsx`: os endereços do site e quais páginas exigem login.
 - `src/features/`: as telas de catálogo, checkout e conta.
-- `src/mocks/`: a API falsa. O `server.ts` tem as rotas e as regras; o `database.ts` guarda tudo no IndexedDB.
+- `src/mocks/`: a API simulada. O arquivo `server.ts` tem as rotas e o `database.ts` guarda os dados no navegador.
 
-## Rotas da API
+## Endereços da API
 
-Todas começam com `/api`.
+Todos começam com `/api`.
 
-- `/session`, `/login`, `/register`: sessão de uma hora.
-- `/nfts` e `/nfts/:id`: catálogo e detalhe.
-- `/favorites`: favoritos do usuário logado.
-- `/cart`: carrinho do usuário ou do visitante.
-- `/quote`: cotação e cupom.
+- `/session`, `/login` e `/register`: entrada e saída da conta.
+- `/nfts` e `/nfts/:id`: catálogo e detalhe de uma obra.
+- `/favorites`: obras favoritas de quem está logado.
+- `/cart`: carrinho de visitante ou de usuário.
+- `/quote`: cálculo dos valores e cupom.
 - `/orders`: criação e consulta de pedidos.
-- `/profile`, `/password`, `/wallets`: dados da conta.
+- `/profile`, `/password` e `/wallets`: dados da conta.
 - `/demo`: muda o cenário da simulação.
 
-## Regras que dão mais trabalho
+## Regras que exigem mais atenção
 
-**Dinheiro.** Os preços são string e os cálculos usam `decimal.js`, para não aparecer aquele `0.30000000000000004`.
+**Preços.** Os valores são guardados como texto e calculados com uma biblioteca chamada `decimal.js`. Sem isso, uma conta simples como `0.1 + 0.2` pode dar `0.30000000000000004`.
 
-**Carrinho de visitante.** Quando a pessoa entra na conta, o carrinho que ela montou sem login é somado ao carrinho dela. Se passar do estoque, a quantidade é ajustada e a tela avisa.
+**Carrinho sem login.** A pessoa pode montar o carrinho antes de entrar na conta. Quando ela faz login, esse carrinho é somado ao carrinho da conta. Se passar do estoque, a quantidade é ajustada e a tela avisa.
 
-**Cotação.** O checkout guarda uma cotação com validade de 60 segundos. Se o preço ou o estoque mudar nesse meio tempo, a cotação antiga não vale mais e a pessoa precisa confirmar os valores novos.
+**Valores que mudam.** O checkout calcula os valores e guarda o resultado por 60 segundos. Se o preço ou o estoque mudar nesse período, a pessoa precisa confirmar tudo de novo antes de pagar.
 
-**Pedido duplicado.** Se a pessoa clicar duas vezes em comprar ou a conexão cair, o pedido não é criado duas vezes. O checkout manda uma chave junto com a compra; se a mesma chave chegar de novo, a API devolve o pedido que já existe.
+**Compra duplicada.** Se alguém clicar duas vezes no botão de comprar, ou se a conexão cair no meio do pedido, a compra não é feita duas vezes. O site envia uma chave junto com o pedido, e a API usa essa chave para reconhecer uma tentativa repetida.
 
-**Tempo real.** O Socket.IO avisa quando o preço mudou, mas ele não manda o dado para a tela. Ele só avisa que algo mudou, e o React Query busca a informação atualizada na API.
+**Preço em tempo real.** Quando um preço muda, o servidor de tempo real avisa o site. Esse aviso não altera a tela diretamente: ele só diz que algo mudou, e o site busca a informação atualizada.
 
-## Limites
+## Limitações
 
-Tudo roda no navegador. Não tem blockchain, pagamento de verdade nem banco de dados compartilhado. Duas abas abertas usam a mesma sessão, e não existe controle para escrita simultânea entre elas.
+Tudo acontece dentro do navegador. Não existe blockchain, pagamento de verdade nem banco de dados compartilhado. Duas abas abertas usam a mesma conta, e não há controle para duas pessoas alterarem os mesmos dados ao mesmo tempo.
 
-O maior problema de performance é o MSW precisar iniciar antes do React, o que pesa no carregamento do mobile.
+O ponto mais fraco é o carregamento no celular, porque a simulação precisa começar antes da página aparecer.

@@ -1,95 +1,98 @@
 # Kurio
 
-Marketplace de NFTs que fiz para um desafio de front-end. Foi o projeto que mais me fez estudar React, TypeScript e estado assíncrono até agora.
+Este é um marketplace de NFTs que desenvolvi para um desafio de front-end. A ideia era montar o fluxo completo de uma loja: encontrar uma arte, ver os detalhes, colocar no carrinho, finalizar a compra e acompanhar o pedido.
 
-A aplicação não tem servidor. O MSW (Mock Service Worker) simula a API dentro do navegador e os dados ficam salvos no IndexedDB. Por isso o login, o carrinho e os pedidos continuam lá depois de atualizar a página.
+O site não usa um servidor de verdade. Uma biblioteca chamada MSW simula as respostas da API dentro do navegador, e os dados ficam salvos no próprio navegador. Assim, dá para atualizar a página sem perder o login, o carrinho ou os pedidos.
 
 ![Página inicial no desktop](docs/screenshots/inicio-desktop.jpg)
 
-## O que funciona hoje
+## O que dá para fazer
 
-- catálogo com busca, filtros, ordenação e paginação (o estado fica na URL);
-- página do NFT com escolha de edição, quantidade, favorito e compra;
-- carrinho com cupom `KURIO10` e resumo dos valores;
-- checkout com escolha de carteira, revisão e confirmação do pedido;
-- página do pedido que continua disponível depois de recarregar;
-- login, cadastro, perfil, troca de senha e carteiras;
-- preço e estoque atualizando em tempo real com Socket.IO;
-- um painel de demonstração para simular erros (timeout, 503, sessão expirada etc.).
+- buscar NFTs por nome, coleção, rede e faixa de preço;
+- ordenar e navegar entre as páginas do catálogo;
+- abrir a página de um NFT, escolher a edição e a quantidade;
+- favoritar uma obra (é preciso estar logado);
+- adicionar ao carrinho, mudar a quantidade e aplicar o cupom `KURIO10`;
+- escolher uma carteira e finalizar a compra;
+- abrir o pedido novamente depois de atualizar a página;
+- entrar, criar conta, editar o perfil, trocar a senha e cadastrar carteiras;
+- acompanhar a mudança de preço em tempo real;
+- testar situações de erro pelo painel **Demonstração**, no canto da tela.
 
-| Catálogo no mobile | Detalhe no desktop |
+| Catálogo no celular | Detalhe no computador |
 | --- | --- |
 | ![Catálogo](docs/screenshots/inicio-mobile.jpg) | ![Detalhe](docs/screenshots/detalhe-desktop.jpg) |
 
 ## Como rodar
 
-Precisa de Node.js 22 ou mais novo.
+Você vai precisar do Node.js 22 ou superior.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Abre em `http://localhost:5173`. Os mocks já vêm ligados. Se quiser desligar, use `VITE_ENABLE_MOCKS=false` (nesse caso é preciso ter uma API em `/api`).
+Depois, abra `http://localhost:5173` no navegador. A simulação já vem ligada. Se quiser desligar, use `VITE_ENABLE_MOCKS=false`. Nesse caso, o site vai precisar de uma API de verdade em `/api`.
 
-Contas para testar:
+Contas para teste:
 
 | Nome | E-mail | Senha |
 | --- | --- | --- |
 | Nova Sato | nova@kurio.art | Kurio123! |
 | Leo Costa | leo@kurio.art | Kurio123! |
 
-São contas fictícias. Não use dados reais.
+Essas contas são fictícias. Não use dados pessoais ou senhas reais.
 
 ## Testes
+
+Para conferir se está tudo funcionando:
 
 ```bash
 npm run typecheck
 npm run lint
-npm test                 # regras de negócio
+npm test
 npm run build
 npx playwright install chromium
-npm run test:e2e         # fluxos no navegador
-npm run test:visual      # screenshots e acessibilidade
+npm run test:e2e
+npm run test:visual
 ```
 
-Os testes de fluxo cobrem as 12 partes do desafio. Os visuais comparam screenshots e também rodam axe para acessibilidade.
+Os testes abrem o site e simulam uma pessoa navegando: buscam, filtram, compram e erram de propósito. Os testes visuais comparam capturas de tela e também verificam acessibilidade.
 
-Se a comparação visual falhar por poucos pixels em outro computador, rode `npx playwright test tests/visual.spec.ts --update-snapshots`. Isso costuma acontecer por causa da renderização da fonte em cada sistema.
+Se a comparação de imagens falhar por poucos pixels em outro computador, rode `npx playwright test tests/visual.spec.ts --update-snapshots`. Isso acontece porque cada sistema desenha as fontes de um jeito um pouco diferente.
 
-## O que eu tentei aprender
+## O que aprendi
 
-- usar React Query para cache, carregamento e erro em vez de encher a tela de `useState`;
-- manter o estado dos filtros na URL, para o botão voltar do navegador funcionar;
-- tratar tela vazia, erro e carregamento em todos os fluxos;
-- escrever testes que clicam e navegam como uma pessoa;
-- cuidar do básico de acessibilidade: foco, labels, contraste e teclado;
-- calcular dinheiro com `decimal.js` em vez de `number`.
+- organizar o carregamento e os erros das telas sem criar um monte de variáveis soltas;
+- guardar os filtros na URL para o botão de voltar do navegador funcionar;
+- escrever testes que clicam nos botões e preenchem os campos como uma pessoa faria;
+- cuidar do básico de acessibilidade: foco, rótulos, contraste e navegação pelo teclado;
+- fazer contas de dinheiro sem os erros de arredondamento do JavaScript.
 
-## O que ainda está fraco
+## O que ainda quero melhorar
 
-- o Lighthouse mobile fica em 87/88 por causa do MSW iniciando antes do React. Não consegui resolver sem tirar o mock do carregamento inicial;
-- o CSS está em um arquivo só. Está separado por seções, mas ainda é grande;
-- não existe backend real, então isso não serve para produção;
-- algumas telas no mobile ainda podem melhorar;
-- o painel de demonstração é útil para testar, mas deixa o projeto com cara de exercício.
+- o desempenho no celular. A nota do Lighthouse fica entre 87 e 88 porque a simulação precisa carregar antes da página aparecer;
+- o CSS, que está todo em um arquivo só. Está separado por seções, mas ainda é grande;
+- o layout de algumas telas no celular;
+- a falta de um servidor de verdade. Hoje o projeto serve para estudo e demonstração, não para uso real;
+- o painel de demonstração. Ele ajuda a testar, mas deixa o projeto com cara de exercício.
 
-## Estrutura
+## Organização das pastas
 
 ```text
 src/
-  contracts.ts     tipos usados na aplicação
-  rules.ts         cálculos, carrinho e regras do pedido
-  api.ts           Axios e React Query
-  router.tsx       rotas e proteção das páginas privadas
+  contracts.ts     tipos dos dados usados no site
+  rules.ts         cálculos e regras do carrinho e do pedido
+  api.ts           conversa com a API
+  router.tsx       endereços das páginas
   features/        catálogo, checkout e conta
-  components/      layout, formulários, diálogos e botões
-  mocks/           API falsa, dados e IndexedDB
-tests/             Playwright
+  components/      cabeçalho, rodapé, formulários e botões
+  mocks/           API simulada, dados de exemplo e armazenamento
+tests/             testes feitos com Playwright
 docs/CHALLENGE.md  enunciado do desafio
 ```
 
-Se quiser entender como as partes conversam, tem um resumo em [ARCHITECTURE.md](ARCHITECTURE.md).
+Se quiser entender melhor como as partes conversam, tem um resumo em [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Observações
 
