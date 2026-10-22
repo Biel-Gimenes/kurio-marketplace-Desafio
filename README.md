@@ -4,6 +4,8 @@ Este é um marketplace de NFTs que desenvolvi para um desafio de front-end. A id
 
 O site não usa um servidor de verdade. Uma biblioteca chamada MSW simula as respostas da API dentro do navegador, e os dados ficam salvos no próprio navegador. Assim, dá para atualizar a página sem perder o login, o carrinho ou os pedidos.
 
+**Site publicado:** https://kurio-marketplace-nine.vercel.app
+
 ![Página inicial no desktop](docs/screenshots/inicio-desktop.jpg)
 
 ## O que dá para fazer
