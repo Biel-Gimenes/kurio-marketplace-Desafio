@@ -19,8 +19,8 @@ O site não usa um servidor de verdade. Uma biblioteca chamada MSW simula as res
 - acompanhar a mudança de preço em tempo real;
 - testar situações de erro pelo painel **Demonstração**, no canto da tela.
 
-| Catálogo no celular | Detalhe no computador |
-| --- | --- |
+| Catálogo no celular                             | Detalhe no computador                            |
+| ----------------------------------------------- | ------------------------------------------------ |
 | ![Catálogo](docs/screenshots/inicio-mobile.jpg) | ![Detalhe](docs/screenshots/detalhe-desktop.jpg) |
 
 ## Como rodar
@@ -36,10 +36,10 @@ Depois, abra `http://localhost:5173` no navegador. A simulação já vem ligada.
 
 Contas para teste:
 
-| Nome | E-mail | Senha |
-| --- | --- | --- |
+| Nome      | E-mail         | Senha     |
+| --------- | -------------- | --------- |
 | Nova Sato | nova@kurio.art | Kurio123! |
-| Leo Costa | leo@kurio.art | Kurio123! |
+| Leo Costa | leo@kurio.art  | Kurio123! |
 
 Essas contas são fictícias. Não use dados pessoais ou senhas reais.
 
@@ -61,22 +61,6 @@ Os testes abrem o site e simulam uma pessoa navegando: buscam, filtram, compram 
 
 Se a comparação de imagens falhar por poucos pixels em outro computador, rode `npx playwright test tests/visual.spec.ts --update-snapshots`. Isso acontece porque cada sistema desenha as fontes de um jeito um pouco diferente.
 
-## O que aprendi
-
-- organizar o carregamento e os erros das telas sem criar um monte de variáveis soltas;
-- guardar os filtros na URL para o botão de voltar do navegador funcionar;
-- escrever testes que clicam nos botões e preenchem os campos como uma pessoa faria;
-- cuidar do básico de acessibilidade: foco, rótulos, contraste e navegação pelo teclado;
-- fazer contas de dinheiro sem os erros de arredondamento do JavaScript.
-
-## O que ainda quero melhorar
-
-- o desempenho no celular. A nota do Lighthouse fica entre 87 e 88 porque a simulação precisa carregar antes da página aparecer;
-- o CSS, que está todo em um arquivo só. Está separado por seções, mas ainda é grande;
-- o layout de algumas telas no celular;
-- a falta de um servidor de verdade. Hoje o projeto serve para estudo e demonstração, não para uso real;
-- o painel de demonstração. Ele ajuda a testar, mas deixa o projeto com cara de exercício.
-
 ## Organização das pastas
 
 ```text
@@ -91,9 +75,3 @@ src/
 tests/             testes feitos com Playwright
 docs/CHALLENGE.md  enunciado do desafio
 ```
-
-Se quiser entender melhor como as partes conversam, tem um resumo em [ARCHITECTURE.md](ARCHITECTURE.md).
-
-## Observações
-
-O enunciado original está em [docs/CHALLENGE.md](docs/CHALLENGE.md). As imagens vieram do Figma do desafio e foram convertidas para WebP. Carteiras, pagamentos e transações são todos simulados.
