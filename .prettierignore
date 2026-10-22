@@ -1,0 +1,8 @@
+node_modules
+dist
+.vercel
+public
+playwright-report
+test-results
+docs/reports
+tests/baselines

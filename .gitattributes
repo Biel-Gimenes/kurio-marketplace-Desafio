@@ -1,0 +1,5 @@
+docs/reports/** -whitespace linguist-generated=true
+tests/baselines/** linguist-generated=true
+*.png binary
+*.webp binary
+*.zip binary
