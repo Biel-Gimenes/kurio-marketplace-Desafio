@@ -1,99 +1,96 @@
 # Kurio
 
-Marketplace de arte digital em React + TypeScript. O backend inteiro é simulado no navegador com MSW e IndexedDB: REST, Socket.IO, sessão, carrinho e pedidos funcionam sem servidor.
+Marketplace de NFTs que fiz para um desafio de front-end. Foi o projeto que mais me fez estudar React, TypeScript e estado assíncrono até agora.
+
+A aplicação não tem servidor. O MSW (Mock Service Worker) simula a API dentro do navegador e os dados ficam salvos no IndexedDB. Por isso o login, o carrinho e os pedidos continuam lá depois de atualizar a página.
 
 ![Página inicial no desktop](docs/screenshots/inicio-desktop.jpg)
 
-## O que está funcionando
+## O que funciona hoje
 
-- catálogo com busca, filtros, ordenação, paginação e estado na URL;
-- detalhe com edição, estoque por edição, quantidade, favorito e galeria;
-- carrinho com cupom `KURIO10`, fusão do carrinho de visitante no login;
-- checkout com cotação, carteira por rede, revisão e idempotência;
-- pedido confirmado ou recusado, com recibo que sobrevive a refresh;
-- login, cadastro, perfil, avatar, senha e carteiras;
-- preço/estoque mudando em tempo real via Socket.IO;
-- painel **Demonstração** com 11 cenários de erro (timeout, 503, sessão expirada, pagamento recusado etc.).
+- catálogo com busca, filtros, ordenação e paginação (o estado fica na URL);
+- página do NFT com escolha de edição, quantidade, favorito e compra;
+- carrinho com cupom `KURIO10` e resumo dos valores;
+- checkout com escolha de carteira, revisão e confirmação do pedido;
+- página do pedido que continua disponível depois de recarregar;
+- login, cadastro, perfil, troca de senha e carteiras;
+- preço e estoque atualizando em tempo real com Socket.IO;
+- um painel de demonstração para simular erros (timeout, 503, sessão expirada etc.).
 
-| Catálogo mobile | Detalhe desktop |
+| Catálogo no mobile | Detalhe no desktop |
 | --- | --- |
 | ![Catálogo](docs/screenshots/inicio-mobile.jpg) | ![Detalhe](docs/screenshots/detalhe-desktop.jpg) |
 
-## Rodando
+## Como rodar
 
-Node.js 22 ou superior.
+Precisa de Node.js 22 ou mais novo.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Abra `http://localhost:5173`. Os mocks vêm ligados, inclusive no build. `VITE_ENABLE_MOCKS=false` desliga o MSW e passa a exigir um backend em `/api`.
+Abre em `http://localhost:5173`. Os mocks já vêm ligados. Se quiser desligar, use `VITE_ENABLE_MOCKS=false` (nesse caso é preciso ter uma API em `/api`).
 
-Contas de demonstração:
+Contas para testar:
 
-| Conta | E-mail | Senha |
+| Nome | E-mail | Senha |
 | --- | --- | --- |
 | Nova Sato | nova@kurio.art | Kurio123! |
 | Leo Costa | leo@kurio.art | Kurio123! |
 
-Tudo é fictício. Não use dados reais.
+São contas fictícias. Não use dados reais.
 
 ## Testes
 
 ```bash
 npm run typecheck
 npm run lint
-npm test                 # regras de negócio (Vitest)
+npm test                 # regras de negócio
 npm run build
 npx playwright install chromium
-npm run test:e2e         # fluxos, contratos e responsividade
-npm run test:visual      # snapshots + axe
+npm run test:e2e         # fluxos no navegador
+npm run test:visual      # screenshots e acessibilidade
 ```
 
-O Lighthouse fica em `npm run audit`, com o preview em `:4173`. No Windows, informe `CHROME_PATH` se o Chrome não estiver no caminho padrão.
+Os testes de fluxo cobrem as 12 partes do desafio. Os visuais comparam screenshots e também rodam axe para acessibilidade.
 
-Os snapshots visuais são sensíveis à renderização de fonte do sistema. Se você rodar em outro SO e eles falharem por alguns pixels, regenere com `npx playwright test tests/visual.spec.ts --update-snapshots`.
+Se a comparação visual falhar por poucos pixels em outro computador, rode `npx playwright test tests/visual.spec.ts --update-snapshots`. Isso costuma acontecer por causa da renderização da fonte em cada sistema.
 
-## Decisões que vale explicar
+## O que eu tentei aprender
 
-- **MSW em vez de dados no componente.** A interface fala HTTP de verdade: status, latência, erro e cancelamento. Trocar o mock por um backend real muda só a origem.
-- **IndexedDB em vez de localStorage.** O estado (36 NFTs, pedidos, carrinhos, cotações) é grande e precisa sobreviver a refresh.
-- **Dinheiro como string e `decimal.js`.** Nenhum valor em ETH passa por `number`.
-- **Cotação com fingerprint.** Se preço ou estoque mudar entre a revisão e a confirmação, o usuário vê os novos valores e confirma de novo.
-- **Evento de socket não injeta estado.** Ele invalida a query e o React Query relê a API. Versões por recurso descartam eventos repetidos ou atrasados.
-- **Idempotência no checkout.** A mesma `Idempotency-Key` com o mesmo corpo recupera o pedido; com corpo diferente retorna 409.
+- usar React Query para cache, carregamento e erro em vez de encher a tela de `useState`;
+- manter o estado dos filtros na URL, para o botão voltar do navegador funcionar;
+- tratar tela vazia, erro e carregamento em todos os fluxos;
+- escrever testes que clicam e navegam como uma pessoa;
+- cuidar do básico de acessibilidade: foco, labels, contraste e teclado;
+- calcular dinheiro com `decimal.js` em vez de `number`.
+
+## O que ainda está fraco
+
+- o Lighthouse mobile fica em 87/88 por causa do MSW iniciando antes do React. Não consegui resolver sem tirar o mock do carregamento inicial;
+- o CSS está em um arquivo só. Está separado por seções, mas ainda é grande;
+- não existe backend real, então isso não serve para produção;
+- algumas telas no mobile ainda podem melhorar;
+- o painel de demonstração é útil para testar, mas deixa o projeto com cara de exercício.
 
 ## Estrutura
 
 ```text
 src/
-  contracts.ts        tipos do domínio
-  rules.ts            totais, fusão de carrinho, versões, JSON canônico
-  api.ts              Axios + React Query
-  router.tsx          rotas e guardas
-  features/           catálogo, checkout e conta
-  components/         layout, formulários, diálogos e UI
-  mocks/              MSW, fixtures e IndexedDB
-tests/                Playwright (fluxos, visual, acessibilidade)
-docs/CHALLENGE.md     enunciado original
+  contracts.ts     tipos usados na aplicação
+  rules.ts         cálculos, carrinho e regras do pedido
+  api.ts           Axios e React Query
+  router.tsx       rotas e proteção das páginas privadas
+  features/        catálogo, checkout e conta
+  components/      layout, formulários, diálogos e botões
+  mocks/           API falsa, dados e IndexedDB
+tests/             Playwright
+docs/CHALLENGE.md  enunciado do desafio
 ```
 
-Detalhes de contratos, cache e tempo real estão em [ARCHITECTURE.md](ARCHITECTURE.md).
+Se quiser entender como as partes conversam, tem um resumo em [ARCHITECTURE.md](ARCHITECTURE.md).
 
-## Limitações
+## Observações
 
-- É uma simulação local: abas compartilham a sessão, não há exclusão mútua entre abas e não existe blockchain nem pagamento real.
-- O Lighthouse mobile fica em 87–88 porque o MSW precisa iniciar antes do React. Em produção, o mock sairia do caminho crítico.
-- Não há SSR nem backend multiusuário.
-
-## O que eu faria diferente
-
-- Removeria o MSW do bundle de produção e deixaria a demo em um ambiente separado.
-- Trocaria sessão em IndexedDB por cookie `httpOnly` em um backend real.
-- Dividiria o CSS por tela; hoje ele está em um arquivo só, apenas organizado por seções.
-- Adicionaria testes de contrato contra um servidor de verdade.
-
-## Créditos
-
-O enunciado está preservado em [docs/CHALLENGE.md](docs/CHALLENGE.md). As quatro artes são derivadas de uma cópia do Figma do desafio e foram convertidas para WebP. Marcas, carteiras e transações são ilustrativas.
+O enunciado original está em [docs/CHALLENGE.md](docs/CHALLENGE.md). As imagens vieram do Figma do desafio e foram convertidas para WebP. Carteiras, pagamentos e transações são todos simulados.
